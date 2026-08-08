@@ -438,10 +438,10 @@ return view.extend({
       var link = document.createElement('link');
       link.id = 'cl-css-ext';
       link.rel = 'stylesheet';
-      link.href = L.resource('view/clashoo/clashoo.css') + '?v=20260609b1';
+      link.href = L.resource('view/clashoo/clashoo.css') + '?v=20260806a1';
       document.head.appendChild(link);
     } else {
-      document.getElementById('cl-css-ext').href = L.resource('view/clashoo/clashoo.css') + '?v=20260609b1';
+      document.getElementById('cl-css-ext').href = L.resource('view/clashoo/clashoo.css') + '?v=20260806a1';
     }
 
     // restore last-viewed tab so save/apply reloads stay put instead of jumping to kernel
@@ -1007,7 +1007,18 @@ return view.extend({
 
     s = m.section(form.NamedSection, 'config', 'clashoo', _("Bypass Rules"));
     s.addremove = false;
-    o = s.option(form.Flag, 'bypass_china',  _("Bypass China IP"));
+    o = s.option(form.Flag, 'bypass_china', _("Bypass China IPv4"));
+    o.default = '0';
+    o.rmempty = false;
+
+    o = s.option(form.Flag, 'bypass_china_ipv6', _("Bypass China IPv6"));
+    o.default = '0';
+    o.rmempty = false;
+    o.cfgvalue = function (section_id) {
+      var value = uci.get('clashoo', section_id, 'bypass_china_ipv6');
+      return (value != null) ? value : uci.get('clashoo', section_id, 'bypass_china');
+    };
+
     o = s.option(form.ListValue, 'bypass_port_mode', _("Bypass Ports"));
     o.value('all', _("All Ports"));
     o.value('common', _("Common Ports"));
@@ -1029,7 +1040,7 @@ return view.extend({
     s.addremove = true;
     s.anonymous = true;
     s.sortable = true;
-    s.description = _("Rules are matched from top to bottom. Unmatched devices use DNS takeover and proxy by default.");
+    s.description = _("Rules are matched from top to bottom. Unmatched devices use DNS takeover and proxy by default. A rule with IPv4, IPv6 and MAC all empty matches every device.");
 
     var hints = this._hostHints || {};
     var hostOptions = [], host6Options = [], macOptions = [];
@@ -1075,11 +1086,11 @@ return view.extend({
     macOptions.forEach(function (kv) { o.value(kv[0], kv[1]); });
 
     o = s.option(form.Flag, 'dns', _("DNS Takeover"));
-    o.default = '0';
+    o.default = '1';
     o.rmempty = false;
 
     o = s.option(form.Flag, 'proxy', _("Proxy"));
-    o.default = '0';
+    o.default = '1';
     o.rmempty = false;
 
     s = m.section(form.NamedSection, 'config', 'clashoo', _("Automation Tasks"));
